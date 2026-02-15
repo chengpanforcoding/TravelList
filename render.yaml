@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: travellist
+    runtime: docker
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+    disk:
+      name: travellist-data
+      mountPath: /data
+      sizeGB: 1

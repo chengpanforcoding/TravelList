@@ -1,0 +1,303 @@
+@page
+@model TravelList.Pages.Trips.ItineraryModel
+@using TravelList.Models
+@{
+    ViewData["Title"] = Model.Trip.Title;
+}
+
+<!-- 旅行標題 -->
+<div class="card p-4 mb-4" style="background: linear-gradient(135deg, #0061f2 0%, #6900c7 100%); color: #fff; overflow: hidden; position: relative;">
+    <div style="position: absolute; top: -30px; right: -30px; font-size: 8rem; opacity: 0.1;"><i class="bi bi-airplane"></i></div>
+    <div class="d-flex justify-content-between align-items-start">
+        <div>
+            <h2 class="fw-bold mb-1">@Model.Trip.Title</h2>
+            <div style="opacity: 0.9;">
+                <i class="bi bi-geo-alt me-1"></i>@Model.Trip.Destination
+                <span class="ms-3"><i class="bi bi-calendar3 me-1"></i>@Model.Trip.StartDate.ToString("yyyy/MM/dd") ~ @Model.Trip.EndDate.ToString("MM/dd")</span>
+                <span class="ms-3"><i class="bi bi-clock me-1"></i>@Model.Trip.TotalDays 天</span>
+                <span class="ms-3"><i class="bi bi-wallet2 me-1"></i>NT$ @Model.Trip.Spots.Sum(s => s.Budget).ToString("N0")</span>
+            </div>
+        </div>
+    </div>
+    <div class="mt-3 d-flex gap-2">
+        <button class="btn btn-light btn-sm fw-bold" onclick="copyShareLink()" style="border-radius: 10px;">
+            <i class="bi bi-share me-1"></i>複製分享連結
+        </button>
+        <a asp-page="Edit" asp-route-id="@Model.Trip.Id" class="btn btn-outline-light btn-sm" style="border-radius: 10px;">
+            <i class="bi bi-pencil me-1"></i>編輯旅行
+        </a>
+    </div>
+    <input type="hidden" id="shareUrl" value="@Model.ShareUrl" />
+</div>
+
+<!-- 每日行程 -->
+@for (int day = 1; day <= Model.Trip.TotalDays; day++)
+{
+    var date = Model.Trip.StartDate.AddDays(day - 1);
+    var daySpots = Model.SpotsByDay.GetValueOrDefault(day, []);
+    var dayBudget = daySpots.Sum(s => s.Budget);
+
+    <div class="day-section mb-4 animate-in">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center">
+                <span class="day-badge me-3">DAY @day</span>
+                <span class="text-muted">@date.ToString("MM/dd (ddd)")</span>
+                <span class="text-muted ms-3 small">@daySpots.Count 個景點 / NT$ @dayBudget.ToString("N0")</span>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="showAddSpotModal(@day)">
+                <i class="bi bi-plus-lg me-1"></i>新增景點
+            </button>
+        </div>
+
+        <div class="spot-list" data-day="@day" id="day-@day">
+            @if (daySpots.Any())
+            {
+                @foreach (var spot in daySpots)
+                {
+                    <div class="spot-card" data-id="@spot.Id">
+                        <div class="spot-drag-handle"><i class="bi bi-grip-vertical"></i></div>
+                        <div class="spot-icon" style="color: @Spot.CategoryColor(spot.Category);">
+                            <i class="bi @Spot.CategoryIcon(spot.Category)"></i>
+                        </div>
+                        <div class="spot-content">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="spot-name">@spot.Name</div>
+                                    @if (!string.IsNullOrEmpty(spot.Address))
+                                    {
+                                        <div class="spot-address">
+                                            <i class="bi bi-pin-map me-1"></i>@spot.Address
+                                            <a href="@spot.GoogleMapsUrl" target="_blank" class="ms-2 text-decoration-none" title="在 Google Maps 開啟">
+                                                <i class="bi bi-box-arrow-up-right"></i> 地圖
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="spot-actions">
+                                    <button class="btn btn-sm btn-link text-primary p-0 me-2" onclick="showEditSpotModal(@spot.Id, '@spot.Name.Replace("'", "\\'")','@(spot.Address?.Replace("'", "\\'") ?? "")','@(spot.StartTime ?? "")','@(spot.EndTime ?? "")','@spot.Category',@spot.Budget,'@(spot.Notes?.Replace("'", "\\'") ?? "")',@spot.DayNumber)" title="編輯">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteSpot(@spot.Id)" title="刪除">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-3 mt-1 small">
+                                @if (!string.IsNullOrEmpty(spot.StartTime))
+                                {
+                                    <span class="text-muted"><i class="bi bi-clock me-1"></i>@spot.StartTime ~ @spot.EndTime</span>
+                                }
+                                <span class="spot-category" style="color: @Spot.CategoryColor(spot.Category);">
+                                    <i class="bi @Spot.CategoryIcon(spot.Category) me-1"></i>@spot.Category
+                                </span>
+                                @if (spot.Budget > 0)
+                                {
+                                    <span class="text-muted"><i class="bi bi-wallet2 me-1"></i>NT$ @spot.Budget.ToString("N0")</span>
+                                }
+                            </div>
+                            @if (!string.IsNullOrEmpty(spot.Notes))
+                            {
+                                <div class="spot-notes mt-1"><i class="bi bi-chat-quote me-1"></i>@spot.Notes</div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="spot-empty" id="empty-day-@day">
+                    <i class="bi bi-plus-circle me-2"></i>點擊上方按鈕新增景點
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<!-- 新增/編輯景點 Modal -->
+<div class="modal fade" id="spotModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius: 16px; border: none;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #0061f2, #6900c7); color: #fff; border-radius: 16px 16px 0 0;">
+                <h5 class="modal-title" id="spotModalTitle"><i class="bi bi-pin-map me-2"></i>新增景點</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" id="spotId" />
+                <input type="hidden" id="spotTripId" value="@Model.Trip.Id" />
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold"><i class="bi bi-geo-alt me-1"></i>景點名稱 *</label>
+                    <input type="text" class="form-control" id="spotName" placeholder="例如：淺草寺" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold"><i class="bi bi-pin-map me-1"></i>地址</label>
+                    <input type="text" class="form-control" id="spotAddress" placeholder="輸入地址，可連結 Google Maps" />
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <label class="form-label fw-bold"><i class="bi bi-calendar me-1"></i>第幾天</label>
+                        <select class="form-select" id="spotDay">
+                            @for (int d = 1; d <= Model.Trip.TotalDays; d++)
+                            {
+                                <option value="@d">Day @d</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label fw-bold"><i class="bi bi-clock me-1"></i>開始</label>
+                        <input type="time" class="form-control" id="spotStart" />
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label fw-bold"><i class="bi bi-clock me-1"></i>結束</label>
+                        <input type="time" class="form-control" id="spotEnd" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <label class="form-label fw-bold"><i class="bi bi-tag me-1"></i>分類</label>
+                        <select class="form-select" id="spotCategory">
+                            @foreach (var c in Spot.Categories)
+                            {
+                                <option value="@c">@c</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-bold"><i class="bi bi-wallet2 me-1"></i>預算 (TWD)</label>
+                        <input type="number" class="form-control" id="spotBudget" min="0" value="0" />
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold"><i class="bi bi-journal-text me-1"></i>備註</label>
+                    <textarea class="form-control" id="spotNotes" rows="2" placeholder="備忘事項..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius: 10px;">取消</button>
+                <button type="button" class="btn btn-primary" onclick="saveSpot()" style="border-radius: 10px;">
+                    <i class="bi bi-check-lg me-1"></i>儲存
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast 通知 -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+    <div id="toast" class="toast" role="alert" style="border-radius: 12px;">
+        <div class="toast-body d-flex align-items-center" id="toastBody">
+            <i class="bi bi-check-circle-fill text-success me-2"></i>
+            <span id="toastMsg"></span>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<script>
+const tripId = @Model.Trip.Id;
+
+// 拖曳排序
+document.querySelectorAll('.spot-list').forEach(el => {
+    new Sortable(el, {
+        group: 'spots',
+        animation: 250,
+        handle: '.spot-drag-handle',
+        ghostClass: 'spot-ghost',
+        dragClass: 'spot-dragging',
+        onEnd: function() { saveOrder(); }
+    });
+});
+
+async function saveOrder() {
+    const items = [];
+    document.querySelectorAll('.spot-list').forEach(list => {
+        const day = parseInt(list.dataset.day);
+        list.querySelectorAll('.spot-card').forEach((card, idx) => {
+            items.push({ id: parseInt(card.dataset.id), dayNumber: day, sortOrder: idx });
+        });
+    });
+    await fetch('/api/spots/reorder', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(items)
+    });
+    showToast('排序已更新');
+}
+
+function showAddSpotModal(day) {
+    document.getElementById('spotId').value = '';
+    document.getElementById('spotModalTitle').innerHTML = '<i class="bi bi-pin-map me-2"></i>新增景點';
+    document.getElementById('spotName').value = '';
+    document.getElementById('spotAddress').value = '';
+    document.getElementById('spotDay').value = day;
+    document.getElementById('spotStart').value = '';
+    document.getElementById('spotEnd').value = '';
+    document.getElementById('spotCategory').value = '景點';
+    document.getElementById('spotBudget').value = '0';
+    document.getElementById('spotNotes').value = '';
+    new bootstrap.Modal(document.getElementById('spotModal')).show();
+}
+
+function showEditSpotModal(id, name, address, start, end, category, budget, notes, day) {
+    document.getElementById('spotId').value = id;
+    document.getElementById('spotModalTitle').innerHTML = '<i class="bi bi-pencil me-2"></i>編輯景點';
+    document.getElementById('spotName').value = name;
+    document.getElementById('spotAddress').value = address;
+    document.getElementById('spotDay').value = day;
+    document.getElementById('spotStart').value = start;
+    document.getElementById('spotEnd').value = end;
+    document.getElementById('spotCategory').value = category;
+    document.getElementById('spotBudget').value = budget;
+    document.getElementById('spotNotes').value = notes;
+    new bootstrap.Modal(document.getElementById('spotModal')).show();
+}
+
+async function saveSpot() {
+    const id = document.getElementById('spotId').value;
+    const data = {
+        name: document.getElementById('spotName').value,
+        address: document.getElementById('spotAddress').value || null,
+        dayNumber: parseInt(document.getElementById('spotDay').value),
+        startTime: document.getElementById('spotStart').value || null,
+        endTime: document.getElementById('spotEnd').value || null,
+        category: document.getElementById('spotCategory').value,
+        budget: parseFloat(document.getElementById('spotBudget').value) || 0,
+        notes: document.getElementById('spotNotes').value || null
+    };
+    if (!data.name) { alert('請輸入景點名稱'); return; }
+
+    if (id) {
+        await fetch(`/api/spots/${id}`, {
+            method: 'PUT', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(data)
+        });
+        showToast('景點已更新');
+    } else {
+        await fetch(`/api/trips/${tripId}/spots`, {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(data)
+        });
+        showToast('景點已新增');
+    }
+    bootstrap.Modal.getInstance(document.getElementById('spotModal')).hide();
+    location.reload();
+}
+
+async function deleteSpot(id) {
+    if (!confirm('確定要刪除這個景點嗎？')) return;
+    await fetch(`/api/spots/${id}`, { method: 'DELETE' });
+    showToast('景點已刪除');
+    location.reload();
+}
+
+function copyShareLink() {
+    const url = document.getElementById('shareUrl').value;
+    navigator.clipboard.writeText(url).then(() => showToast('分享連結已複製！'));
+}
+
+function showToast(msg) {
+    document.getElementById('toastMsg').textContent = msg;
+    new bootstrap.Toast(document.getElementById('toast'), { delay: 2000 }).show();
+}
+</script>
+}

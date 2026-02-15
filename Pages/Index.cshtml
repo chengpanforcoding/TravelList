@@ -1,0 +1,86 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "我的旅行";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="page-title mb-0"><i class="bi bi-suitcase-lg me-2"></i>我的旅行</h2>
+    <a asp-page="/Trips/Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>新增旅行
+    </a>
+</div>
+
+@if (!Model.Trips.Any())
+{
+    <div class="card empty-state">
+        <i class="bi bi-map d-block" style="font-size: 4rem; color: #cbd5e0;"></i>
+        <p class="text-muted fs-5 mb-3 mt-3">還沒有旅行計畫</p>
+        <a asp-page="/Trips/Create" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>建立你的第一趟旅行
+        </a>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var trip in Model.Trips)
+        {
+            var spotCount = trip.Spots.Count;
+            var totalBudget = trip.Spots.Sum(s => s.Budget);
+            var isUpcoming = trip.StartDate > DateTime.Now;
+            var isPast = trip.EndDate < DateTime.Now;
+            <div class="col-md-6 col-lg-4 animate-in">
+                <div class="card h-100" style="overflow: hidden;">
+                    <div class="p-3 text-white" style="background: linear-gradient(135deg, @(isPast ? "#718096, #a0aec0" : isUpcoming ? "#0061f2, #6900c7" : "#e65100, #ff9800"));">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="fw-bold mb-1">@trip.Title</h5>
+                                <small style="opacity: 0.9;"><i class="bi bi-geo-alt me-1"></i>@trip.Destination</small>
+                            </div>
+                            @if (isPast)
+                            {
+                                <span class="badge bg-light text-dark">已結束</span>
+                            }
+                            else if (isUpcoming)
+                            {
+                                <span class="badge bg-warning text-dark">即將出發</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">進行中</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="p-3">
+                        <div class="d-flex gap-3 text-muted small mb-3">
+                            <span><i class="bi bi-calendar3 me-1"></i>@trip.StartDate.ToString("yyyy/MM/dd") ~ @trip.EndDate.ToString("MM/dd")</span>
+                            <span><i class="bi bi-clock me-1"></i>@trip.TotalDays 天</span>
+                        </div>
+                        <div class="d-flex gap-4 mb-3">
+                            <div>
+                                <div class="fw-bold fs-5 text-primary">@spotCount</div>
+                                <small class="text-muted">景點</small>
+                            </div>
+                            <div>
+                                <div class="fw-bold fs-5" style="color: #e65100;">NT$ @totalBudget.ToString("N0")</div>
+                                <small class="text-muted">預算</small>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a asp-page="/Trips/Itinerary" asp-route-id="@trip.Id" class="btn btn-primary btn-sm flex-grow-1">
+                                <i class="bi bi-calendar-week me-1"></i>查看行程
+                            </a>
+                            <a asp-page="/Trips/Edit" asp-route-id="@trip.Id" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a asp-page="/Trips/Delete" asp-route-id="@trip.Id" class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

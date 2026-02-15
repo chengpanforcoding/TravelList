@@ -1,0 +1,345 @@
+/* ===== 全域 ===== */
+html { font-size: 14px; }
+@media (min-width: 768px) { html { font-size: 16px; } }
+
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(160deg, #f0f4ff 0%, #fafbff 40%, #fff5f5 100%);
+  color: #2d3748;
+}
+body > .container { flex: 1; }
+
+/* ===== 導航列 ===== */
+.navbar { padding: 0.8rem 0; }
+.navbar .nav-link {
+  border-radius: 8px;
+  transition: background 0.2s;
+  font-weight: 500;
+}
+.navbar .nav-link:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+/* ===== 卡片 ===== */
+.card {
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  background: #fff;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+/* ===== 統計卡片 ===== */
+.stat-card {
+  text-align: center;
+  padding: 2rem 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  border-radius: 16px 16px 0 0;
+}
+.stat-card.stat-total::before { background: linear-gradient(90deg, #0061f2, #6900c7); }
+.stat-card.stat-want::before { background: linear-gradient(90deg, #2196f3, #00bcd4); }
+.stat-card.stat-plan::before { background: linear-gradient(90deg, #ff9800, #ff5722); }
+.stat-card.stat-done::before { background: linear-gradient(90deg, #4caf50, #00c853); }
+
+.stat-card .stat-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.7;
+}
+.stat-card .stat-number {
+  font-size: 2.8rem;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 0.3rem;
+}
+.stat-card .stat-label {
+  font-size: 0.9rem;
+  color: #718096;
+  font-weight: 500;
+}
+
+/* ===== 狀態標籤 ===== */
+.status-badge {
+  font-size: 0.8rem;
+  padding: 0.35em 0.9em;
+  border-radius: 20px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.status-想去 {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  color: #1565c0;
+}
+.status-計畫中 {
+  background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+  color: #e65100;
+}
+.status-已完成 {
+  background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+  color: #2e7d32;
+}
+
+/* ===== 標籤 ===== */
+.badge-tag {
+  font-size: 0.75rem;
+  margin: 2px;
+  padding: 0.35em 0.7em;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f0f4ff, #e8ecf4) !important;
+  color: #4a5568 !important;
+  font-weight: 500;
+  border: 1px solid #e2e8f0;
+}
+
+/* ===== 星星 ===== */
+.priority-stars {
+  color: #f6ad55;
+  letter-spacing: 3px;
+  font-size: 1.1rem;
+}
+
+/* ===== 目的地卡片 ===== */
+.dest-card {
+  border-left: 4px solid transparent;
+  padding: 1.5rem !important;
+}
+.dest-card.border-want { border-left-color: #2196f3; }
+.dest-card.border-plan { border-left-color: #ff9800; }
+.dest-card.border-done { border-left-color: #4caf50; }
+
+.dest-card .dest-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a202c;
+}
+.dest-card .dest-country {
+  font-size: 0.85rem;
+  color: #718096;
+}
+.dest-card .dest-budget {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0061f2;
+}
+.dest-card .dest-notes {
+  font-size: 0.85rem;
+  color: #a0aec0;
+  font-style: italic;
+}
+
+/* ===== 按鈕 ===== */
+.btn-primary {
+  background: linear-gradient(135deg, #0061f2 0%, #6900c7 100%);
+  border: none;
+  border-radius: 10px;
+  padding: 0.5rem 1.5rem;
+  font-weight: 600;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, #0061f2 0%, #6900c7 100%);
+}
+
+.btn-outline-primary {
+  border-radius: 10px;
+  font-weight: 500;
+  border-width: 2px;
+}
+.btn-outline-danger {
+  border-radius: 10px;
+  font-weight: 500;
+  border-width: 2px;
+}
+.btn-outline-secondary {
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+/* ===== 表單 ===== */
+.form-control, .form-select {
+  border-radius: 10px;
+  border: 2px solid #e2e8f0;
+  padding: 0.6rem 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-control:focus, .form-select:focus {
+  border-color: #0061f2;
+  box-shadow: 0 0 0 3px rgba(0,97,242,0.15);
+}
+.form-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #4a5568;
+  margin-bottom: 0.3rem;
+}
+
+/* ===== 搜尋篩選列 ===== */
+.filter-bar {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+
+/* ===== 首頁預算卡片 ===== */
+.budget-card {
+  background: linear-gradient(135deg, #0061f2 0%, #6900c7 100%);
+  color: #fff;
+  border-radius: 16px;
+}
+.budget-card .budget-amount {
+  font-size: 2.2rem;
+  font-weight: 900;
+}
+
+/* ===== 排行榜 ===== */
+.ranking-item {
+  padding: 0.8rem 0;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.2s;
+}
+.ranking-item:last-child { border-bottom: none; }
+.ranking-item:hover { background: #f8fafc; }
+
+/* ===== 頁面標題 ===== */
+.page-title {
+  font-weight: 900;
+  font-size: 1.8rem;
+  color: #1a202c;
+  position: relative;
+  display: inline-block;
+}
+.page-title::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 40px;
+  height: 4px;
+  background: linear-gradient(90deg, #0061f2, #6900c7);
+  border-radius: 2px;
+}
+
+/* ===== 空狀態 ===== */
+.empty-state {
+  padding: 4rem 2rem;
+  text-align: center;
+}
+.empty-state i {
+  font-size: 4rem;
+  color: #cbd5e0;
+  margin-bottom: 1rem;
+}
+
+/* ===== 動畫 ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-in {
+  animation: fadeInUp 0.5s ease forwards;
+}
+.animate-in:nth-child(1) { animation-delay: 0.05s; }
+.animate-in:nth-child(2) { animation-delay: 0.1s; }
+.animate-in:nth-child(3) { animation-delay: 0.15s; }
+.animate-in:nth-child(4) { animation-delay: 0.2s; }
+.animate-in:nth-child(5) { animation-delay: 0.25s; }
+.animate-in:nth-child(6) { animation-delay: 0.3s; }
+
+/* ===== 行程時間軸 ===== */
+.day-badge {
+  background: linear-gradient(135deg, #0061f2, #6900c7);
+  color: #fff;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+
+.spot-list {
+  min-height: 60px;
+  position: relative;
+}
+
+.spot-card {
+  display: flex;
+  align-items: flex-start;
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s, transform 0.2s;
+  border-left: 4px solid #e2e8f0;
+  cursor: default;
+}
+.spot-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  transform: translateX(2px);
+}
+
+.spot-drag-handle {
+  cursor: grab;
+  color: #cbd5e0;
+  font-size: 1.2rem;
+  padding: 0 0.5rem 0 0;
+  display: flex;
+  align-items: center;
+}
+.spot-drag-handle:hover { color: #718096; }
+
+.spot-icon {
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #f7fafc;
+  flex-shrink: 0;
+  margin-right: 0.8rem;
+}
+
+.spot-content { flex: 1; min-width: 0; }
+.spot-name { font-weight: 700; font-size: 1rem; color: #1a202c; }
+.spot-address { font-size: 0.8rem; color: #a0aec0; margin-top: 2px; }
+.spot-category { font-weight: 600; font-size: 0.8rem; }
+.spot-notes { font-size: 0.8rem; color: #a0aec0; font-style: italic; }
+.spot-actions { white-space: nowrap; }
+
+.spot-empty {
+  text-align: center;
+  padding: 2rem;
+  color: #cbd5e0;
+  border: 2px dashed #e2e8f0;
+  border-radius: 12px;
+  font-size: 0.9rem;
+}
+
+.spot-ghost {
+  opacity: 0.4;
+  background: #e3f2fd;
+  border-radius: 12px;
+}
+.spot-dragging {
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  transform: rotate(2deg);
+}
