@@ -74,7 +74,17 @@
                                     }
                                 </div>
                                 <div class="spot-actions">
-                                    <button class="btn btn-sm btn-link text-primary p-0 me-2" onclick="showEditSpotModal(@spot.Id, '@spot.Name.Replace("'", "\\'")','@(spot.Address?.Replace("'", "\\'") ?? "")','@(spot.StartTime ?? "")','@(spot.EndTime ?? "")','@spot.Category',@spot.Budget,'@(spot.Notes?.Replace("'", "\\'") ?? "")',@spot.DayNumber)" title="編輯">
+                                    <button class="btn btn-sm btn-link text-primary p-0 me-2 btn-edit-spot"
+                                            data-id="@spot.Id"
+                                            data-name="@spot.Name"
+                                            data-address="@(spot.Address ?? "")"
+                                            data-start="@(spot.StartTime ?? "")"
+                                            data-end="@(spot.EndTime ?? "")"
+                                            data-category="@spot.Category"
+                                            data-budget="@spot.Budget"
+                                            data-notes="@(spot.Notes ?? "")"
+                                            data-day="@spot.DayNumber"
+                                            title="編輯">
                                         <i class="bi bi-pencil"></i>
                                     </button>
                                     <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteSpot(@spot.Id)" title="刪除">
@@ -237,6 +247,14 @@ function showAddSpotModal(day) {
     document.getElementById('spotNotes').value = '';
     new bootstrap.Modal(document.getElementById('spotModal')).show();
 }
+
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.btn-edit-spot');
+    if (btn) {
+        const d = btn.dataset;
+        showEditSpotModal(d.id, d.name, d.address, d.start, d.end, d.category, d.budget, d.notes, d.day);
+    }
+});
 
 function showEditSpotModal(id, name, address, start, end, category, budget, notes, day) {
     document.getElementById('spotId').value = id;
