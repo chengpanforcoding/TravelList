@@ -37,7 +37,7 @@ public class Spot
     [Display(Name = "備註")]
     public string? Notes { get; set; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public string GoogleMapsUrl =>
         string.IsNullOrWhiteSpace(Address)

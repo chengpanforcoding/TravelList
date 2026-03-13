@@ -59,8 +59,17 @@ app.MapRazorPages().WithStaticAssets().RequireRateLimiting("fixed");
 
 app.MapPost("/api/trips/{tripId}/spots", async (int tripId, Spot spot, AppDbContext db) =>
 {
+    if (string.IsNullOrWhiteSpace(spot.Name))
+        return Results.BadRequest("景點名稱不能為空");
+    if (spot.Budget < 0)
+        return Results.BadRequest("預算不能為負數");
+    if (spot.DayNumber < 1)
+        return Results.BadRequest("天數必須大於 0");
+    var tripExists = await db.Trips.AnyAsync(t => t.Id == tripId);
+    if (!tripExists) return Results.NotFound("找不到此行程");
+
     spot.TripId = tripId;
-    spot.CreatedAt = DateTime.Now;
+    spot.CreatedAt = DateTime.UtcNow;
     var maxOrder = await db.Spots.Where(s => s.TripId == tripId && s.DayNumber == spot.DayNumber).MaxAsync(s => (int?)s.SortOrder) ?? -1;
     spot.SortOrder = maxOrder + 1;
     db.Spots.Add(spot);
@@ -70,6 +79,11 @@ app.MapPost("/api/trips/{tripId}/spots", async (int tripId, Spot spot, AppDbCont
 
 app.MapPut("/api/spots/{id}", async (int id, Spot updated, AppDbContext db) =>
 {
+    if (string.IsNullOrWhiteSpace(updated.Name))
+        return Results.BadRequest("景點名稱不能為空");
+    if (updated.Budget < 0)
+        return Results.BadRequest("預算不能為負數");
+
     var spot = await db.Spots.FindAsync(id);
     if (spot == null) return Results.NotFound();
     spot.Name = updated.Name;

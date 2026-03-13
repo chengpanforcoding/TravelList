@@ -27,7 +27,7 @@ public class Trip
     [Display(Name = "分享碼")]
     public string ShareCode { get; set; } = Guid.NewGuid().ToString("N")[..8];
 
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public List<Spot> Spots { get; set; } = [];
 
